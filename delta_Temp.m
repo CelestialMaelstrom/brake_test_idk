@@ -1,21 +1,29 @@
 function dT = delta_Temp(T_current, vel, accel, params, dt)
 
-    %-----------------------------------
-    % 1. Calculate Forces (Newton's 2nd Law)
-    %-----------------------------------
-    % Total inertial force required to decelerate the car mass
-    % (Using -accel since decel is negative in data)
+    % 1. Calculate Forces
     F_inertial = params.m_car * (-accel);
-
-    %-----------------------------------
-    % 2. Subtract "Free" Deceleration (Drag)
-    %-----------------------------------
-    % These forces slow the car but do NOT heat the brakes.
     F_aero = 0.5 * params.rho_air * params.Cd * params.A_frontal * (vel^2);
     F_roll = params.Crr * params.m_car * params.g;
     
-    % The actual force the tires/brakes must generate
-    F_brake_net = F_inertial - F_aero - F_roll;
+    % 2. Apply Deadzone
+    F_brake_raw = F_inertial - F_aero - F_roll;
+
+    % Convert g-force deadzone to Newtons: F = m * a
+    % We default to 0.05g if the param doesn't exist yet (safety check)
+    if isfield(params, 'accel_deadzone_g')
+        deadzone_g = params.accel_deadzone_g;
+    else
+        deadzone_g = 0.05; 
+    end
+    
+    F_deadzone_N = deadzone_g * 9.81 * params.m_car;
+
+    % Filter the force
+    if F_brake_raw < F_deadzone_N
+        F_brake_net = 0;
+    else
+        F_brake_net = F_brake_raw;
+    end
 
     %-----------------------------------
     % 3. Brake Power Input

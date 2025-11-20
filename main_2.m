@@ -15,11 +15,36 @@ vel = S1.Vehicle_Speed.Value;
 vel = vel(:);
 
 %% Acceleration
-accel = S1.IRIMU_V2_IMU_Acceleration_X_Axis.Value;
-% Convert acceleration sampling rate to that of temperature
+%% Acceleration Processing & Calibration
+accel_raw = S1.IRIMU_V2_IMU_Acceleration_X_Axis.Value;
 accel_time = S1.IRIMU_V2_IMU_Acceleration_X_Axis.Time;
-% Interpolate acceleration values to match the temperature time vector
-accel_interp = interp1(accel_time, accel, t, 'linear', 'extrap');
+
+% 1. Interpolate to match Temperature time vector
+accel_interp = interp1(accel_time, accel_raw, t, 'linear', 'extrap');
+
+% 2. Auto-Calibration (Zeroing)
+% Define "Tail End" as the last 15% of the dataset
+num_samples = length(accel_interp);
+tail_start = round(0.85 * num_samples); 
+tail_data = accel_interp(tail_start:end);
+
+% Calculate the Bias (Average of the tail)
+accel_bias = mean(tail_data);
+
+% Apply correction to the ENTIRE dataset
+accel_corrected = accel_interp - accel_bias;
+accel = accel_corrected;
+
+% 3. Determine Deadzone (Noise Floor)
+% Find the maximum noise spike in the tail section
+noise_floor = max(abs(tail_data - accel_bias));
+
+% Set deadzone to 1.5x the noise floor to be safe
+params.accel_deadzone_g = noise_floor * 1.5;
+
+fprintf('Calibration Complete:\n');
+fprintf('  Bias Removed: %.4f g\n', accel_bias);
+fprintf('  Deadzone Set: %.4f g\n', params.accel_deadzone_g);
 
 
 
