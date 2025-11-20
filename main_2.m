@@ -8,6 +8,15 @@ B_T = S1.Brake_Temperature_Front_Right_Sensor;
 t_temp_raw = B_T.Time(:);
 temp_raw   = B_T.Value(:);
 
+% Brake gating
+B_P_F_chan = S1.Brake_Pressure_Front_Sensor; 
+t_b_p_raw = B_P_F_chan.Time(:);
+b_p_raw   = B_P_F_chan.Value(:);
+
+% CORRECTION: Convert Psi -> Pascals
+% 1 Psi = 6894.76 Pa
+b_p_raw_Pa = b_p_raw * 6894.76;
+
 % Note: Using Y-Axis (Positive = Throttle, Negative = Brake)
 accel_chan = S1.IRIMU_V2_IMU_Acceleration_Y_Axis;
 t_accel_raw = accel_chan.Time(:);
@@ -50,6 +59,9 @@ vel = interp1(t_vel_raw, vel_ms_raw, t, 'linear', 'extrap');
 
 % Accel: Interpolate
 accel = interp1(t_accel_raw, accel_raw, t, 'linear', 'extrap');
+
+% Brake Pressure: Interpolate
+b_p = interp1(t_b_p_raw, b_p_raw, t, 'linear', 'extrap');
 
 %% 3. Process Acceleration (Bias & Deadzone)
 % Use the last 15% of the run to find the "zero" point
@@ -94,7 +106,7 @@ for i = 2:length(T_predicted)
     % Sanity check for duplicate timestamps
     if dt_step <= 0, dt_step = 1e-6; end
     
-    dT = delta_Temp(T_predicted(i-1), vel(i), accel(i), params, dt_step);
+    dT = delta_Temp(T_predicted(i-1), vel(i), accel(i), b_p(i), params, dt_step);
     T_predicted(i) = T_predicted(i-1) + dT;
 end
 
@@ -122,5 +134,14 @@ figure;
 plot(t, accel, 'b', 'LineWidth', 1.5, 'DisplayName', 'Interpolated Acceleration');
 xlabel('Time (s)');
 ylabel('Acceleration (m/s^2)');
+legend();
+grid on;
+
+%% Fig 3 -- Brake Pressure
+% Plot brake pressure data
+figure;
+plot(t, b_p, 'm', 'LineWidth', 1.5, 'DisplayName', 'Interpolated Brake Pressure');
+xlabel('Time (s)');
+ylabel('Brake Pressure (Pa)');
 legend();
 grid on;
