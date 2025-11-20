@@ -10,9 +10,6 @@ function params = buildParams()
     
     % Radiation
     params.sigma    = 5.67e-8;    % W/m2K4
-    % CORRECTION: Sheet listed 0.000319 here, but that is likely 
-    % the partition coefficient 'p'. Used steel emissivity is ~0.55.
-    params.eps      = 0.55;
 
     %--------------------
     % Air Properties
@@ -25,15 +22,14 @@ function params = buildParams()
     %--------------------
     % Friction / Pad Geometry
     %--------------------
-    params.mu       = 0.45;      % From 'Redo' tab
-    params.A_pis    = 0.0006387; % m2
+    params.mu       = 0.45;
+    params.A_pis    = 0.0006387096774; % m2
+    params.n_pis    = 2;
 
     % Partition coefficients
-    params.e_rotor  = 12926;  
-    params.e_pad    = 2500;   % Estimate for pad
-
-    params.S_r      = 0.0010305; % Rotor contact surface
-    params.S_p      = 0.0012903; % Pad contact surface
+    params.S_r      = 0.0010305;
+    params.S_p      = 0.0012903;
+    params.e        = 12926.56;  % effusivity term
 
     %--------------------
     % Empirical h(v) Data
@@ -46,11 +42,11 @@ function params = buildParams()
     
     % Drag
     params.Cd = 1.25;       % Drag coefficient (typical FSAE: 1.0 - 1.5)
-    params.A_frontal = 1.132; % Frontal Area in m^2
+    params.A_frontal = 1.0; % Frontal Area in m^2
     params.Crr = 0.015;    % Rolling resistance coefficient
     params.g = 9.81;
 
-    params.bias_front = 0.63;
+    params.bias_front = 0.60;
 
     params.eps = 0.55;
 
