@@ -59,8 +59,10 @@ params.h_Wm2K  = [9.88 19.9 29.9 39.9 49.9 59.9];
     % ENGINE BRAKING (NEW)
     % FSAE engines provide significant drag (approx 0.15g) when off-throttle.
     % This removes load from the brakes.
-    params.engine_braking_g = 0.0075;
+    params.engine_braking_g = 0.01;
 
     params.eps = 0.55;
+
+    %params.K_hyd = 0.00014;
 
 end
