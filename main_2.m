@@ -11,13 +11,14 @@ t = t(:);
 temp = temp(:);
 
 %% Velocity
-vel = S1.Vehicle_Speed.Value;
+vel_raw = S1.Vehicle_Speed.Value;
+vel = vel_raw / 3.6; % CONVERSION: km/h -> m/s
 vel = vel(:);
 
 %% Acceleration
 %% Acceleration Processing & Calibration
-accel_raw = S1.IRIMU_V2_IMU_Acceleration_X_Axis.Value;
-accel_time = S1.IRIMU_V2_IMU_Acceleration_X_Axis.Time;
+accel_raw = S1.IRIMU_V2_IMU_Acceleration_Y_Axis.Value;
+accel_time = S1.IRIMU_V2_IMU_Acceleration_Y_Axis.Time;
 
 % 1. Interpolate to match Temperature time vector
 accel_interp = interp1(accel_time, accel_raw, t, 'linear', 'extrap');
@@ -89,7 +90,7 @@ end
 %% Fig 2 - accelerometer
 % Plot accelerometer data
 figure;
-plot(accel_time, accel, 'b', 'LineWidth', 1.5, 'DisplayName', 'Interpolated Acceleration');
+plot(t, accel, 'b', 'LineWidth', 1.5, 'DisplayName', 'Interpolated Acceleration');
 xlabel('Time (s)');
 ylabel('Acceleration (m/s^2)');
 legend();
