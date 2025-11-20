@@ -8,9 +8,9 @@ function dT = delta_Temp(T_current, vel, accel, pressure, params, dt)
     F_brake_net = F_inertial - F_aero - F_roll;
 
     % 2. PRESSURE GATING
-    % Determine if brakes are actually active.
-    % Threshold: 10 in Pa
-    brake_threshold = 1 * 10^5;
+    % Threshold: 100,000 Pa (~14.5 Psi)
+    % Your noise is ~70,000 Pa (10 Psi). This clears it safely.
+    brake_threshold = 100000;
     
     if pressure > brake_threshold && F_brake_net > 0
         % Brakes are PRESSED and Deceleration is occurring
@@ -29,12 +29,10 @@ function dT = delta_Temp(T_current, vel, accel, pressure, params, dt)
         H_d = p * P_rotor_input;
         
     else
-        % Pedal is NOT pressed -> Zero Heat Input
-        % (Even if accel says -0.2g due to drag/engine braking)
         H_d = 0;
     end
 
-    % 3. Cooling (Convection + Radiation)
+    % 3. Cooling
     v_kmh = max(vel * 3.6, 0);
     h = interp1(params.h_vel, params.h_Wm2K, v_kmh, 'linear', 'extrap');
     H_conv = h * params.A_rotor * (T_current - params.T_amb);

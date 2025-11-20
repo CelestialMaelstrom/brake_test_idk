@@ -15,7 +15,7 @@ b_p_raw   = B_P_F_chan.Value(:);
 
 % CORRECTION: Convert Psi -> Pascals
 % 1 Psi = 6894.76 Pa
-b_p_raw = b_p_raw * 6894.76;
+b_p_raw_Pa = b_p_raw * 6894.76;
 
 % Note: Using Y-Axis (Positive = Throttle, Negative = Brake)
 accel_chan = S1.IRIMU_V2_IMU_Acceleration_Y_Axis;
@@ -34,7 +34,6 @@ dt_vel   = mean(diff(t_vel_raw));
 fprintf('Sampling Intervals:\n  Temp: %.4fs\n  Vel:  %.4fs\n  Acc:  %.4fs\n', dt_temp, dt_vel, dt_accel);
 
 % SELECT MASTER CLOCK (The Fastest Channel)
-% We define 't' as the high-resolution time vector
 if dt_accel <= dt_temp && dt_accel <= dt_vel
     t = t_accel_raw;
     fprintf('>> Master Clock: Accelerometer (High Res)\n');
@@ -47,45 +46,37 @@ else
 end
 
 %% 2. Interpolate ALL Variables to Master Clock
-% This ensures t, temp, vel, and accel are all the exact same length
-% so your plotting code works without modification.
-
-% Temp: Linear interpolation (draws lines between dots)
+% Temp
 temp = interp1(t_temp_raw, temp_raw, t, 'linear', 'extrap');
 
-% Vel: Convert km/h -> m/s and interpolate
+% Vel
 vel_ms_raw = vel_raw / 3.6; 
 vel = interp1(t_vel_raw, vel_ms_raw, t, 'linear', 'extrap');
 
-% Accel: Interpolate
+% Accel
 accel = interp1(t_accel_raw, accel_raw, t, 'linear', 'extrap');
 
 % Brake Pressure: Interpolate
-b_p = interp1(t_b_p_raw, b_p_raw, t, 'linear', 'extrap');
+% FIX IS HERE: Use 'b_p_raw_Pa', NOT 'b_p_raw'
+b_p = interp1(t_b_p_raw, b_p_raw_Pa, t, 'linear', 'extrap');
 
 %% 3. Process Acceleration (Bias & Deadzone)
-% Use the last 15% of the run to find the "zero" point
 num_samples = length(accel);
 tail_start  = round(0.85 * num_samples); 
 tail_data   = accel(tail_start:end);
 
 accel_bias = mean(tail_data);
-accel = accel - accel_bias; % Apply Correction
+accel = accel - accel_bias; 
 
-% Calculate Noise Floor from the tail
 noise_floor = max(abs(tail_data - accel_bias));
-deadzone_g  = noise_floor * 1.5; % 1.5x Safety Margin
+deadzone_g  = noise_floor * 1.5; 
 
 fprintf('Calibration:\n  Bias Removed: %.4f g\n  Deadzone Set: %.4f g\n', accel_bias, deadzone_g);
 
 %% 4. Moving Average (Scaled to Sampling Rate)
-% Original code used N=91. If we are now running 10x faster, 
-% we should increase N to keep the same smoothing window.
-% Assuming original was ~10Hz (N=91 -> ~9s window? Or 0.9s?)
-% We will stick to a ~1.0 second smoothing window.
 freq = 1/mean(diff(t));
-N = round(3.0 * freq); % 1-second window
-if mod(N,2)==0, N=N+1; end % Ensure odd number
+N = round(1.0 * freq); % 1-second window
+if mod(N,2)==0, N=N+1; end 
 
 b = ones(N,1)/N;
 a = 1;
@@ -98,51 +89,32 @@ params = buildParams();
 params.accel_deadzone_g = deadzone_g;
 
 T_predicted = zeros(length(t),1);
-T_predicted(1) = temp(1); % Initialize from data
+T_predicted(1) = temp(1); 
 
 for i = 2:length(T_predicted)
     dt_step = t(i) - t(i-1);
-    
-    % Sanity check for duplicate timestamps
     if dt_step <= 0, dt_step = 1e-6; end
     
     dT = delta_Temp(T_predicted(i-1), vel(i), accel(i), b_p(i), params, dt_step);
     T_predicted(i) = T_predicted(i-1) + dT;
 end
 
-% ---------------------------------------------------------
-% STOP COPYING HERE. 
-% Your existing "%% Fig 1" plotting code goes below this line.
-% ---------------------------------------------------------
-
-
 %% Fig 1
-    figure;
-    scatter(t, temp, 1, 'filled', 'DisplayName', 'Raw Data', 'MarkerFaceAlpha', 0.2); hold on;
-    plot(t, y_shifted, 'r', 'LineWidth', 2, 'DisplayName', 'Moving Average (delay corrected');
-    
-    xlabel('Time (s)');
-    ylabel('Brake Temperature');
-    legend();
-    grid on;
-
-    plot(t, T_predicted, 'g', 'LineWidth', 2, 'DisplayName', 'Predicted Temp');
-
-%% Fig 2 - accelerometer
-% Plot accelerometer data
 figure;
-plot(t, accel, 'b', 'LineWidth', 1.5, 'DisplayName', 'Interpolated Acceleration');
-xlabel('Time (s)');
-ylabel('Acceleration (m/s^2)');
-legend();
+scatter(t, temp, 1, 'filled', 'DisplayName', 'Raw Data', 'MarkerFaceAlpha', 0.2); hold on;
+plot(t, y_shifted, 'r', 'LineWidth', 2, 'DisplayName', 'Moving Average');
+plot(t, T_predicted, 'g', 'LineWidth', 2, 'DisplayName', 'Predicted Temp');
+xlabel('Time (s)'); ylabel('Brake Temperature');
+legend(); grid on;
+
+%% Fig 2 - Accelerometer
+figure;
+plot(t, accel, 'b', 'DisplayName', 'Accel');
+xlabel('Time (s)'); ylabel('Acceleration (g)');
 grid on;
 
-%% Fig 3 -- Brake Pressure
-% Plot brake pressure data
+%% Fig 3 - Brake Pressure
 figure;
-plot(t, b_p, 'm', 'LineWidth', 1.5, 'DisplayName', 'Interpolated Brake Pressure');
-xlabel('Time (s)');
-ylabel('Brake Pressure (Pa)');
-legend();
+plot(t, b_p, 'm', 'DisplayName', 'Brake Pressure (Pa)');
+xlabel('Time (s)'); ylabel('Pressure (Pa)');
 grid on;
-yline(0.1 * 10^5);
