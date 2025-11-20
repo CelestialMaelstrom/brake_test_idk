@@ -25,9 +25,9 @@ accel = interp1(accel_t, accel_raw, t, 'linear', 'extrap');
 
 %% 2. Define System Constants (Must match buildParams)
 % These must be accurate for the math to hold
-m_rotor = 0.3817;    % kg
-c_rotor = 523;       % J/kg-K (Steel)
-A_total = 0.035212;  % m^2 (Total Surface Area)
+m_rotor = 0.4354;    % <--- UPDATE THIS (Was 0.3817)
+c_rotor = 486;       % Matches your buildParams
+A_total = 0.035212;  % Matches your buildParams
 eps     = 0.55;      % Emissivity
 sigma   = 5.67e-8;
 T_amb   = 20;        % Assumed ambient C
@@ -90,7 +90,7 @@ h_fit = max(h_fit, 0);
 
 % Plot
 figure('Color','w');
-scatter(v_kmh_clean, h_calculated, 15, 'k', 'filled', 'MarkerFaceAlpha', 0.1); hold on;
+scatter(v_kmh_clean, h_calculated, 15, 'k', 'filled', 'MarkerFaceAlpha', 0.8); hold on;
 plot(v_query, h_fit, 'r-', 'LineWidth', 3);
 title('Derived Convection Coefficient (h) vs Speed');
 xlabel('Speed (km/h)');
