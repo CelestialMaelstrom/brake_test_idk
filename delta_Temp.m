@@ -10,7 +10,7 @@ function dT = delta_Temp(T_current, vel, accel, pressure, params, dt)
     % 2. PRESSURE GATING
     % Determine if brakes are actually active.
     % Threshold: 10 in Pa
-    brake_threshold = 10;
+    brake_threshold = 1 * 10^5;
     
     if pressure > brake_threshold && F_brake_net > 0
         % Brakes are PRESSED and Deceleration is occurring

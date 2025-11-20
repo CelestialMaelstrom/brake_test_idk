@@ -15,7 +15,7 @@ b_p_raw   = B_P_F_chan.Value(:);
 
 % CORRECTION: Convert Psi -> Pascals
 % 1 Psi = 6894.76 Pa
-b_p_raw_Pa = b_p_raw * 6894.76;
+b_p_raw = b_p_raw * 6894.76;
 
 % Note: Using Y-Axis (Positive = Throttle, Negative = Brake)
 accel_chan = S1.IRIMU_V2_IMU_Acceleration_Y_Axis;
@@ -145,3 +145,4 @@ xlabel('Time (s)');
 ylabel('Brake Pressure (Pa)');
 legend();
 grid on;
+yline(0.1 * 10^5);
