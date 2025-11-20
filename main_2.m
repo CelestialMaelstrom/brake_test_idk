@@ -41,7 +41,7 @@ accel = accel_corrected;
 noise_floor = max(abs(tail_data - accel_bias));
 
 % Set deadzone to 1.5x the noise floor to be safe
-params.accel_deadzone_g = noise_floor * 1.5;
+params.accel_deadzone_g = noise_floor * 1;
 
 fprintf('Calibration Complete:\n');
 fprintf('  Bias Removed: %.4f g\n', accel_bias);
@@ -66,11 +66,11 @@ params = buildParams();
 
 % For each timestep of original data (t), we call delta_Temp and 'integrate' it
 T_predicted = zeros(length(t),1);
-T_predicted(1) = 51.68; % Start of data
-timestep = mean(diff(t)); % Calculate the average time step between measurements
+T_predicted(1) = temp(1); % Start of data
 for i = 2:length(T_predicted)
+    dt_step = t(i) - t(i-1);
     % Pass the PREVIOUS temperature to calculate the CURRENT change
-    dT = delta_Temp(T_predicted(i-1), vel(i), accel(i), params, timestep);
+    dT = delta_Temp(T_predicted(i-1), vel(i), accel(i), params, dt_step);
     T_predicted(i) = T_predicted(i-1) + dT;
 end
 
