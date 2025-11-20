@@ -1,0 +1,43 @@
+function params = buildParams()
+
+    %--------------------
+    % Rotor Properties
+    %--------------------
+    params.m_r      = 0.3817;     % kg
+    params.c_r      = 523;        % J/kg-K
+    params.A_rotor  = 0.035212;   % m^2
+    params.eps      = 0.000319;   % emissivity
+    
+    % Radiation
+    params.sigma    = 5.67e-8;    % W/m2K4
+
+    %--------------------
+    % Air Properties
+    %--------------------
+    params.rho_air  = 1.17;      % kg/m3
+    params.Cp_air   = 1100;      % J/kgK
+    params.k_air    = 0.026;     % W/mK
+    params.T_amb    = 20;
+
+    %--------------------
+    % Friction / Pad Geometry
+    %--------------------
+    params.mu       = 0.45;
+    params.A_pis    = 0.0006387096774; % m2
+    params.n_pis    = 2;
+
+    % Partition coefficients
+    params.S_r      = 0.0010305;
+    params.S_p      = 0.0012903;
+    params.e        = 12926.56;  % effusivity term
+
+    %--------------------
+    % Empirical h(v) Data
+    %--------------------
+    params.h_vel   = [0 20 40 60];        % km/h
+    params.h_Wm2K  = [1.0 21.3 36.0 49.2]; % W/m2K
+
+    % Car
+    params.m_car = 227 + 70; % car + driver
+
+end
