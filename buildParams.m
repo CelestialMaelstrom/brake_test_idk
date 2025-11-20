@@ -3,7 +3,7 @@ function params = buildParams()
     %--------------------
     % Rotor Properties
     %--------------------
-    params.m_r      = 0.3817;     % kg
+    params.m_r      = 0.4354;     % kg
     params.c_r      = 523;        % J/kg-K
     params.A_rotor  = 0.035212;   % m^2
     params.eps      = 0.000319;   % emissivity

@@ -1,5 +1,8 @@
 clear; close all; clc;
 
+%% Build params
+params = buildParams();
+
 %% Gather channels from S1 file
 S1 = load('S1_#31435_20251109_162322.mat'); % Load the S1 file
 
@@ -61,8 +64,7 @@ y_shifted = [y(delay+1:end); NaN(delay,1)];
 
 
 %% Predict Temp
-% Build params
-params = buildParams();
+
 
 % For each timestep of original data (t), we call delta_Temp and 'integrate' it
 T_predicted = zeros(length(t),1);
