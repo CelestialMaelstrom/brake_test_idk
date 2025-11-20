@@ -60,3 +60,12 @@ end
     grid on;
 
     plot(t, T_predicted, 'g', 'LineWidth', 2, 'DisplayName', 'Predicted Temp');
+
+%% Fig 2 - accelerometer
+% Plot accelerometer data
+figure;
+plot(accel_time, accel, 'b', 'LineWidth', 1.5, 'DisplayName', 'Interpolated Acceleration');
+xlabel('Time (s)');
+ylabel('Acceleration (m/s^2)');
+legend();
+grid on;
