@@ -43,7 +43,8 @@ T_predicted = zeros(length(t),1);
 T_predicted(1) = 51.68; % Start of data
 timestep = mean(diff(t)); % Calculate the average time step between measurements
 for i = 2:length(T_predicted)
-    dT = delta_Temp(T_predicted(i), vel(i), accel(i), params, timestep);
+    % Pass the PREVIOUS temperature to calculate the CURRENT change
+    dT = delta_Temp(T_predicted(i-1), vel(i), accel(i), params, timestep);
     T_predicted(i) = T_predicted(i-1) + dT;
 end
 
