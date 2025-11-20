@@ -30,7 +30,7 @@ function params = buildParams()
 
     % Partition coefficients
     params.e_rotor  = 12926;  
-    params.e_pad    = 2500;   % Estimate for pad
+    params.e_pad    = 7500;   % Estimate for pad
 
     params.S_r      = 0.0010305; % Rotor contact surface
     params.S_p      = 0.0012903; % Pad contact surface
@@ -38,11 +38,17 @@ function params = buildParams()
     %--------------------
     % Empirical h(v) Data
     %--------------------
-    params.h_vel   = [0 20 40 60];        % km/h
-    params.h_Wm2K  = [1.0 21.3 36.0 49.2]; % W/m2K
+    params.h_vel   = [0 20 40 60 80 100];
+params.h_Wm2K  = [9.88 19.9 29.9 39.9 49.9 59.9];
 
-    % Car
+    % HUB SINK FACTOR (NEW)
+    % Steel rotors lose heat to the aluminum hat/hub via conduction.
+    % We assume 90% of partitioned heat stays in the ring, 10% leaks to hub.
+    params.hub_efficiency = 0.95;
+
+    % Vehicle Dynamics
     params.m_car = 227 + 70; % car + driver
+    params.bias_front = 0.63;
     
     % Drag
     params.Cd = 1.25;       % Drag coefficient (typical FSAE: 1.0 - 1.5)
@@ -50,7 +56,10 @@ function params = buildParams()
     params.Crr = 0.015;    % Rolling resistance coefficient
     params.g = 9.81;
 
-    params.bias_front = 0.63;
+    % ENGINE BRAKING (NEW)
+    % FSAE engines provide significant drag (approx 0.15g) when off-throttle.
+    % This removes load from the brakes.
+    params.engine_braking_g = 0.0075;
 
     params.eps = 0.55;
 
